@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.repository.SampleRepository">
+    <select id="findAll" resultType="com.example.demo.model.Sample" fetchSize="1000">
+        SELECT * FROM samples
+        <where>
+            <if test="since != null">
+                date <![CDATA[ >= ]]> #{since}
+            </if>
+            <if test="until != null">
+                AND date <![CDATA[ <= ]]> #{until}
+            </if>
+        </where>
+    </select>
+</mapper>
