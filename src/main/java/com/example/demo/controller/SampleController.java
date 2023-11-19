@@ -3,7 +3,12 @@ package com.example.demo.controller;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 
+import org.springframework.core.io.PathResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -37,6 +42,16 @@ public class SampleController {
         PrintWriter writer = response.getWriter();
 
         sampleService.outputCsv(since, until, writer);
+    }
+
+    @GetMapping("file")
+    public ResponseEntity<Resource> file(@RequestParam(name = "fileName") String fileName)
+            throws IOException {
+        Path path = Path.of(fileName);
+        Resource resource = new PathResource(path);
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(resource);
     }
 
 }
