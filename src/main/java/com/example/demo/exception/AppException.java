@@ -11,6 +11,10 @@ public class AppException extends RuntimeException {
 
     private HttpStatus status;
 
+    public AppException(String message) {
+        super(message);
+    }
+
     public AppException(HttpStatus status) {
         super(status.getReasonPhrase());
         setStatus(status);
