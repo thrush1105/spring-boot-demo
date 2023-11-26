@@ -2,9 +2,9 @@ package com.example.demo.service;
 
 import java.text.ParseException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.HashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -14,6 +14,7 @@ import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.JWSSigner;
+import com.nimbusds.jose.JWSVerifier;
 import com.nimbusds.jose.crypto.RSASSASigner;
 import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jose.jwk.JWK;
@@ -29,18 +30,27 @@ public class JwtService {
     @Autowired
     private Environment environment;
 
+    private final JWSAlgorithm algorithm;
+
     private final JWK privateJwk;
 
     private final JWK publicJwk;
 
+    private final JWSSigner signer;
+
+    private final JWSVerifier verifier;
+
     public JwtService()
             throws JOSEException {
+        algorithm = JWSAlgorithm.RS256;
         privateJwk = new RSAKeyGenerator(2048)
                 .keyUse(KeyUse.SIGNATURE)
-                .algorithm(JWSAlgorithm.RS256)
+                .algorithm(algorithm)
                 .keyID(UUID.randomUUID().toString())
                 .generate();
         publicJwk = privateJwk.toPublicJWK();
+        signer = new RSASSASigner(privateJwk.toRSAKey());
+        verifier = new RSASSAVerifier(publicJwk.toRSAKey());
     }
 
     public Map<String, Object> getJwks()
@@ -63,11 +73,9 @@ public class JwtService {
                 .jwtID(UUID.randomUUID().toString())
                 .build();
 
-        JWSHeader header = new JWSHeader.Builder(JWSAlgorithm.RS256)
+        JWSHeader header = new JWSHeader.Builder(algorithm)
                 .keyID(publicJwk.getKeyID())
                 .build();
-
-        JWSSigner signer = new RSASSASigner(privateJwk.toRSAKey());
 
         SignedJWT signedJWT = new SignedJWT(header, claimsSet);
         signedJWT.sign(signer);
@@ -78,7 +86,6 @@ public class JwtService {
     public Map<String, Object> verifyJwt(String token)
             throws ParseException, JOSEException {
         SignedJWT signedJWT = SignedJWT.parse(token);
-        RSASSAVerifier verifier = new RSASSAVerifier(publicJwk.toRSAKey());
         boolean verified = signedJWT.verify(verifier);
 
         Map<String, Object> verificationResult = new HashMap<>();
