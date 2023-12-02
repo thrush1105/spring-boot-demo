@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.Map;
 
 import org.springframework.core.io.PathResource;
 import org.springframework.core.io.Resource;
@@ -52,6 +53,11 @@ public class SampleController {
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(resource);
+    }
+
+    @GetMapping("/external-api")
+    public Map<String, Object> callExternalApi() {
+        return sampleService.callExternalApi();
     }
 
 }
