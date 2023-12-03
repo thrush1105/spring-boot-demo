@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.service.MailService;
 import com.example.demo.service.SampleService;
 
 import jakarta.servlet.http.HttpServletResponse;
@@ -25,8 +26,11 @@ public class SampleController {
 
     private final SampleService sampleService;
 
-    public SampleController(SampleService sampleService) {
+    private final MailService mailService;
+
+    public SampleController(SampleService sampleService, MailService mailService) {
         this.sampleService = sampleService;
+        this.mailService = mailService;
     }
 
     @GetMapping("csv")
@@ -55,9 +59,15 @@ public class SampleController {
                 .body(resource);
     }
 
-    @GetMapping("/external-api")
+    @GetMapping("external-api")
     public Map<String, Object> callExternalApi() {
         return sampleService.callExternalApi();
+    }
+
+    @GetMapping("send-mail")
+    public String sendMail() {
+        mailService.sendTestMail();
+        return "OK!";
     }
 
 }
