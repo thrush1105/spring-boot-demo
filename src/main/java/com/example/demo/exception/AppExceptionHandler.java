@@ -10,6 +10,9 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 
 import com.example.demo.model.ErrorResponse;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @RestControllerAdvice
 public class AppExceptionHandler {
 
@@ -28,6 +31,7 @@ public class AppExceptionHandler {
                 || e instanceof MethodArgumentNotValidException) {
             status = HttpStatus.BAD_REQUEST;
         } else {
+            log.error(e.getMessage(), e);
             status = HttpStatus.INTERNAL_SERVER_ERROR;
         }
         ErrorResponse response = new ErrorResponse(status.value(), e.getMessage(), e.getStackTrace());

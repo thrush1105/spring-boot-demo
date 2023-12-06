@@ -16,4 +16,24 @@
         VALUES
             (#{name}, #{email}, #{password}, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
     </insert>
+    <insert id="saveInBulk">
+        INSERT INTO users
+        (
+            name
+            ,email
+            ,password
+            ,created_at
+            ,updated_at
+        )
+        VALUES
+        <foreach collection="dtoList" item="item" separator=",">
+        (
+            #{item.name}
+            ,#{item.email}
+            ,#{item.password}
+            ,CURRENT_TIMESTAMP
+            ,CURRENT_TIMESTAMP
+        )
+        </foreach>
+    </insert>
 </mapper>

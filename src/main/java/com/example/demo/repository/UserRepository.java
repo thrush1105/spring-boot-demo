@@ -17,4 +17,6 @@ public interface UserRepository {
 
     void save(UserCreationDto dto);
 
+    void saveInBulk(List<UserCreationDto> dtoList);
+
 }
