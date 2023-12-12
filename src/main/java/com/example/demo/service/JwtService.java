@@ -1,9 +1,15 @@
 package com.example.demo.service;
 
+import java.security.cert.CertificateExpiredException;
+import java.security.cert.CertificateNotYetValidException;
+import java.security.cert.X509Certificate;
+import java.security.interfaces.RSAPublicKey;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +27,8 @@ import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.gen.RSAKeyGenerator;
+import com.nimbusds.jose.util.Base64;
+import com.nimbusds.jose.util.X509CertUtils;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 
@@ -84,14 +92,40 @@ public class JwtService {
     }
 
     public Map<String, Object> verifyJwt(String token)
-            throws ParseException, JOSEException {
+            throws ParseException, JOSEException, CertificateExpiredException, CertificateNotYetValidException {
         SignedJWT signedJWT = SignedJWT.parse(token);
-        boolean verified = signedJWT.verify(verifier);
+
+        boolean verified;
+        if (Objects.nonNull(signedJWT.getHeader().getX509CertChain())) {
+            verified = verifyJwtIncludingX509CertChain(signedJWT);
+        } else {
+            verified = signedJWT.verify(verifier);
+        }
+
+        Map<String, Object> decoded = new HashMap<>();
+        decoded.put("header", signedJWT.getHeader().toJSONObject());
+        decoded.put("payload", signedJWT.getPayload().toJSONObject());
 
         Map<String, Object> verificationResult = new HashMap<>();
         verificationResult.put("verified", verified);
-        verificationResult.put("signedJWT", signedJWT);
+        verificationResult.put("encoded", signedJWT.serialize());
+        verificationResult.put("decoded", decoded);
         return verificationResult;
+    }
+
+    private boolean verifyJwtIncludingX509CertChain(SignedJWT signedJWT)
+            throws ParseException, JOSEException, CertificateExpiredException, CertificateNotYetValidException {
+        List<Base64> certChain = signedJWT.getHeader().getX509CertChain();
+        X509Certificate cert = X509CertUtils.parse(certChain.get(0).decode());
+        verifyCert(cert);
+        RSAPublicKey publicKey = (RSAPublicKey) cert.getPublicKey();
+        JWSVerifier verifier = new RSASSAVerifier(publicKey);
+        return signedJWT.verify(verifier);
+    }
+
+    private void verifyCert(X509Certificate cert)
+            throws CertificateExpiredException, CertificateNotYetValidException {
+        cert.checkValidity();
     }
 
 }
