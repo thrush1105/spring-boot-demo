@@ -1,13 +1,18 @@
 package com.example.demo.service;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Map;
 
 import org.apache.ibatis.cursor.Cursor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.core.io.PathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -69,6 +74,21 @@ public class SampleService {
                 new ParameterizedTypeReference<Map<String, Object>>() {
                 });
         return response.getBody();
+    }
+
+    public void outputFile(String fileName, OutputStream out)
+            throws IOException {
+        Path path = Path.of(fileName);
+        Resource resource = new PathResource(path);
+
+        try (InputStream in = resource.getInputStream()) {
+            int bufferSize = 1 * 1024 * 1024;
+            byte[] buffer = new byte[bufferSize];
+            int len;
+            while ((len = in.read(buffer)) != -1) {
+                out.write(buffer, 0, len);
+            }
+        }
     }
 
 }

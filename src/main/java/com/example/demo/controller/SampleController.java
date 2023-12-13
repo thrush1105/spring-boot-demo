@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -57,6 +58,20 @@ public class SampleController {
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(resource);
+    }
+
+    @GetMapping("download")
+    public void download(@RequestParam(name = "fileName") String fileName, HttpServletResponse response)
+            throws IOException {
+        Path path = Path.of(fileName);
+        Resource resource = new PathResource(path);
+
+        response.setContentType(MediaType.APPLICATION_OCTET_STREAM.toString());
+        response.setContentLengthLong(resource.contentLength());
+
+        try (InputStream in = resource.getInputStream()) {
+            sampleService.outputFile(fileName, response.getOutputStream());
+        }
     }
 
     @GetMapping("external-api")
