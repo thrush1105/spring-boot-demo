@@ -29,18 +29,20 @@ public class JwtController {
     @GetMapping("jwks")
     public Map<String, Object> jwks() {
         try {
-            return jwtService.getJwks();
+            return jwtService.getPublicJwks();
         } catch (JOSEException e) {
             throw new AppException(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
     @GetMapping("generate")
-    public Map<String, Object> generateJWT() {
+    public Map<String, Object> generateJWT(
+            @RequestParam(name = "alg", required = false, defaultValue = "RS256") String algorithmName) {
         String token;
         try {
-            token = jwtService.generateJwt();
-        } catch (JOSEException e) {
+            token = jwtService.generateJwt(algorithmName);
+        } catch (AppException
+                | JOSEException e) {
             throw new AppException(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
         Map<String, Object> res = new HashMap<>();
@@ -53,7 +55,8 @@ public class JwtController {
         Map<String, Object> verificationResult;
         try {
             verificationResult = jwtService.verifyJwt(token);
-        } catch (ParseException
+        } catch (AppException
+                | ParseException
                 | JOSEException
                 | CertificateExpiredException
                 | CertificateNotYetValidException e) {
