@@ -108,7 +108,7 @@ public class JwtService {
     private void validateAlgorithm(String algorithmName) {
         if (!supportedAlgorithms.contains(algorithmName)) {
             throw new AppException(
-                    String.format("Supported algorithms are ", String.join(", ", supportedAlgorithms)));
+                    String.format("Supported algorithms are %s", String.join(", ", supportedAlgorithms)));
         }
     }
 
