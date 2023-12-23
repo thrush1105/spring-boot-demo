@@ -3,7 +3,6 @@ package com.example.demo.service;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Map;
@@ -60,10 +59,13 @@ public class SampleService {
     }
 
     @Transactional(readOnly = true)
-    public void outputCsv(String since, String until, PrintWriter writer)
+    public void outputCsv(String since, String until, OutputStream stream)
             throws IOException {
         try (Cursor<Sample> samples = sampleRepository.findAll(since, until)) {
-            SequenceWriter csvWriter = csvMapper.writer(csvSchema).writeValues(writer);
+            SequenceWriter csvWriter = csvMapper
+                    .writerFor(Sample.class)
+                    .with(csvSchema)
+                    .writeValues(stream);
             csvWriter.writeAll(samples);
         }
     }

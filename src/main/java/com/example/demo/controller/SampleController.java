@@ -2,7 +2,7 @@ package com.example.demo.controller;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintWriter;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Map;
@@ -45,9 +45,9 @@ public class SampleController {
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
         response.setHeader("Content-Disposition", "attachment; filename=\"sample.csv\"");
 
-        PrintWriter writer = response.getWriter();
+        OutputStream stream = response.getOutputStream();
 
-        sampleService.outputCsv(since, until, writer);
+        sampleService.outputCsv(since, until, stream);
     }
 
     @GetMapping("file")
